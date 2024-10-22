@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -A MST112277       # Account name/project number
-#SBATCH -J cwt_generate    # Job name
+#SBATCH -A ACD112176      # Account name/project number
+#SBATCH -J Corr_index generate    # Job name
 #SBATCH -p ct560             # Partition name
 #SBATCH -c 10              # Number of cores per MPI task
 #SBATCH -n 48               # Number of MPI tasks (i.e. processes)
@@ -14,8 +14,4 @@
 module purge
 ml miniconda3
 conda activate ECG_SHAP_39 #進入 conda 環境
-# python -u "./data_mod/cwt_generate.py"
-# python -u "./data_mod/dataset_generate.py"
-# python -u "./data_mod/pair_generate.py"
-# python -u "./data_mod/dataset_spe_test.py"
-python -u "./data_mod/few_shot_generate.py"
+python -u "./data_mod/Corr_US.py"
