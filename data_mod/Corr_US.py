@@ -57,7 +57,7 @@ if __name__=="__main__":
         correlation_index=np.zeros(y_data.shape[0])
         for c in range(5):
             label_indices=np.where(label_class_data==c)[0]
-            correlation_index[label_indices]=data_gen_corr(y_data[label_indices[c]])
+            correlation_index[label_indices[0:2]]=data_gen_corr(y_data[label_indices[0:2]])
         save_path=os.path.join(base_path,"train","corr_index",basepath+"_fold"+str(i)+".npy")
         np.save(save_path,correlation_index)
     
