@@ -18,4 +18,5 @@ def parse_args():
     parser.add_argument('--best_metric', type=float, default=100.0, help="Best performance of validation set")
     parser.add_argument('--patience', type=int, default=100, help="How many epoch the model stop getting better")
     parser.add_argument('--test_set', type=str, default="normal", help="Be in test situation")
+    parser.add_argument('--sample_way', type=str, default="random", help="How to sample the limited dataset")
     return parser.parse_args()

@@ -47,74 +47,129 @@ def folder_generate(name):
         else:
             print("Dir exit.")
 
+def Corr_sample_datagen(path_dic,basepath,fold):
+    data_diff=["1","5","10","30","50","90","150"]
+    X_train = np.load(path_dic["train_data"])
+    y_train=np.load(path_dic["train_label"])
+    ind_train = np.load(path_dic["corr_index"])
+    y_train=np.load(path_dic["train_label"])
+    X_test=np.load(path_dic["test_data"])
+    y_test=np.load(path_dic["test_label"])
+    X_val=np.load(path_dic["val_data"])
+    y_val = np.load(path_dic["val_label"])
+    for diff in data_diff:
+        train_data_path=os.path.join("./data",basepath+"_"+diff,"train","data",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        train_label_path=os.path.join("./data",basepath+"_"+diff,"train","label",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        val_data_path=os.path.join("./data",basepath+"_"+diff,"val","data",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        val_label_path=os.path.join("./data",basepath+"_"+diff,"val","label",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        test_data_path=os.path.join("./data",basepath+"_"+diff,"test","data",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        test_label_path=os.path.join("./data",basepath+"_"+diff,"test","label",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        random_num=int(diff)
+        train_data=[]
+        train_label=[]
+        label_class_data=np.argmax(y_train,1)
+        for class_num in range(y_train.shape[-1]):
+            c_index=np.where(label_class_data==class_num)[0]
+            c_ind_train=ind_train[c_index]
+            sorted_c_ind_train=np.argsort(c_ind_train)
+            sorted_c_ind_train = sorted_c_ind_train[::-1]
+            shot_temp= c_index[sorted_c_ind_train[:random_num]]
+            train_data=train_data+shot_temp
+            train_label=train_label+shot_temp
+        data=X_train[train_data]
+        label=y_train[train_label]
+        print(diff)
+        print(data.shape)
+        print(label.shape)
+        np.save(train_data_path,data)
+        np.save(train_label_path,label)
+        print(diff)
+        print(X_val.shape)
+        print(y_val.shape)
+        np.save(val_data_path,X_val)
+        np.save(val_label_path,y_val)
+        print(diff)
+        print(X_test.shape)
+        print(y_test.shape)
+        np.save(test_data_path,X_test)
+        np.save(test_label_path,y_test)
+
+def random_sample_datagen(path_dic,basepath,fold):
+    data_diff=["1","5","10","30","50","90","150"]
+    X_train = np.load(path_dic["train_data"])
+    y_train=np.load(path_dic["train_label"])
+    X_test=np.load(path_dic["test_data"])
+    y_test=np.load(path_dic["test_label"])
+    X_val=np.load(path_dic["val_data"])
+    y_val = np.load(path_dic["val_label"])
+
+    for diff in data_diff:
+        train_data_path=os.path.join("./data",basepath+"_"+diff,"train","data",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        train_label_path=os.path.join("./data",basepath+"_"+diff,"train","label",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        val_data_path=os.path.join("./data",basepath+"_"+diff,"val","data",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        val_label_path=os.path.join("./data",basepath+"_"+diff,"val","label",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        test_data_path=os.path.join("./data",basepath+"_"+diff,"test","data",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        test_label_path=os.path.join("./data",basepath+"_"+diff,"test","label",basepath+"_"+diff+"_fold"+str(fold)+".npy")
+        random_num=int(diff)
+        train_data=[]
+        train_label=[]
+        for class_num in range(y_train.shape[-1]):
+            c_index=frozenset(np.where(y_train[:,class_num]==1)[0].tolist())
+            shot_temp= random.sample(c_index, random_num)
+            train_data=train_data+shot_temp
+            train_label=train_label+shot_temp
+        data=X_train[train_data]
+        label=y_train[train_label]
+        print(diff)
+        print(data.shape)
+        print(label.shape)
+        np.save(train_data_path,data)
+        np.save(train_label_path,label)
+        print(diff)
+        print(X_val.shape)
+        print(y_val.shape)
+        np.save(val_data_path,X_val)
+        np.save(val_label_path,y_val)
+        print(diff)
+        print(X_test.shape)
+        print(y_test.shape)
+        np.save(test_data_path,X_test)
+        np.save(test_label_path,y_test)
+
+def US_from_all(arg,basepath):
+    if(arg.sample_way=="random"):
+            basepath=basepath+"_random"
+            folder_generate(basepath)
+    elif(arg.sample_way=="Corr"):
+            basepath=basepath+"_Corr"
+            folder_generate(basepath)
+    for i in range(10):
+        
+        path_dic={}
+        path_dic["train_data"]=os.path.join("./data","mitbih_all","train","data","mitbih_all"+"_fold"+str(i)+".npy")
+        path_dic["train_label"]=os.path.join("./data","mitbih_all","train","label","mitbih_all"+"_fold"+str(i)+".npy")
+        path_dic["train_corr_index"]=os.path.join("./data","mitbih_all","train","corr_index","mitbih_all"+"_fold"+str(i)+".npy")
+        path_dic["val_data"]=os.path.join("./data","mitbih_all","val","data","mitbih_all"+"_fold"+str(i)+".npy")
+        path_dic["val_label"]=os.path.join("./data","mitbih_all","val","label","mitbih_all"+"_fold"+str(i)+".npy")
+        path_dic["test_data"]=os.path.join("./data","mitbih_all","test","data","mitbih_all"+"_fold"+str(i)+".npy")
+        path_dic["test_label"]=os.path.join("./data","mitbih_all","test","label","mitbih_all"+"_fold"+str(i)+".npy")
+
+        if(arg.sample_way=="random"):
+            random_sample_datagen(path_dic,basepath,i)
+    
+        elif(arg.sample_way=="Corr"):
+            random_sample_datagen(path_dic,basepath,i)
+
 
 
     
 if __name__=="__main__":
     arg=parse_args()
-    datadir=arg.data_dir
     basepath="mitbih"
     random.seed(arg.seed)
-    folder_generate(basepath)
-    train_dataset = ECGDataset()
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=False, num_workers=8, pin_memory=True,prefetch_factor=3)
-    output_list=[]
-    labels_list=[]
-    for _, (data, labels) in enumerate(tqdm(train_loader)):
-        output_list.append(data)
-        labels_list.append(labels)
-    y_data = np.vstack(output_list)
-    y_label = np.vstack(labels_list)
-    y_data=np.expand_dims(y_data, axis=1)
-    y_label=np.squeeze(y_label,axis=None)
-    print(y_label.shape)
-    print(y_data.shape)
-    # X_train, X_test, y_train, y_test = train_test_split(y_data, y_label, test_size=0.1, random_state=arg.seed)
-    # X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=arg.seed)
-    kf = KFold(n_splits=10,shuffle=True,random_state=arg.seed)
-
-    for i, (train_index,test_index) in enumerate(kf.split(y_data)):
-        data_diff=["1","5","10","30","50","90","150"]
-
-        X_train = y_data[train_index]
-        y_train=y_label[train_index]
-        X_test=y_data[test_index]
-        y_test=y_label[test_index]
-        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=arg.seed)
-
-        for diff in data_diff:
-            base_path=path=Path("./data",basepath+"_"+diff)
-            train_data_path=Path(base_path,"train","data",basepath+"_"+diff+"_fold"+str(i)+".npy")
-            train_label_path=Path(base_path,"train","label",basepath+"_"+diff+"_fold"+str(i)+".npy")
-            val_data_path=Path(base_path,"val","data",basepath+"_"+diff+"_fold"+str(i)+".npy")
-            val_label_path=Path(base_path,"val","label",basepath+"_"+diff+"_fold"+str(i)+".npy")
-            test_data_path=Path(base_path,"test","data",basepath+"_"+diff+"_fold"+str(i)+".npy")
-            test_label_path=Path(base_path,"test","label",basepath+"_"+diff+"_fold"+str(i)+".npy")
-            random_num=int(diff)
-            train_data=[]
-            train_label=[]
-            for class_num in range(y_train.shape[-1]):
-                c_index=frozenset(np.where(y_train[:,class_num]==1)[0].tolist())
-                shot_temp= random.sample(c_index, random_num)
-                train_data=train_data+shot_temp
-                train_label=train_label+shot_temp
-            data=X_train[train_data]
-            label=y_train[train_label]
-            print(diff)
-            print(data.shape)
-            print(label.shape)
-            np.save(train_data_path,data)
-            np.save(train_label_path,label)
-            print(diff)
-            print(X_val.shape)
-            print(y_val.shape)
-            np.save(val_data_path,X_val)
-            np.save(val_label_path,y_val)
-            print(diff)
-            print(X_test.shape)
-            print(y_test.shape)
-            np.save(test_data_path,X_test)
-            np.save(test_label_path,y_test)
+    US_from_all(arg,basepath)
+   
+   
             
 
 
