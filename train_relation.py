@@ -251,7 +251,7 @@ def train_relation_10_fold(arg,name,folds):
 def train_on_dataset(arg,dataset):
     for dataset_num in dataset:
         if arg.data_dir=="./mit_bih":
-            name="mitbih_"+str(dataset_num)+"_pair"
+            name="mitbih_"+arg.sample_way+str(dataset_num)+"_pair"
             train_relation(arg,name)
 
 def train_on_dataset_10fold(arg,dataset):
@@ -272,12 +272,12 @@ if __name__=="__main__":
     arg = ar.parse_args()
     data_dir = os.path.normpath(arg.data_dir)
     database = os.path.basename(data_dir)
-    dataset=[90,150]
+    dataset=[1,5,10,30,50,90,150]
     print(arg.data_dir)
     print("Train on:",arg.model_name)
-    # train_on_dataset(arg,dataset)
-    # arg.phase="test"
-    # train_on_dataset(arg,dataset)
+    train_on_dataset(arg,dataset)
+    arg.phase="test"
+    train_on_dataset(arg,dataset)
     # arg.phase="train"
     # arg.test_set="spe"
     # train_on_dataset(arg,dataset)
