@@ -251,7 +251,7 @@ def train_relation_10_fold(arg,name,folds):
 def train_on_dataset(arg,dataset):
     for dataset_num in dataset:
         if arg.data_dir=="./mit_bih":
-            name="mitbih_"+arg.sample_way+str(dataset_num)+"_pair"
+            name="mitbih_"+arg.sample_way+"_"+str(dataset_num)+"_pair"
             train_relation(arg,name)
 
 def train_on_dataset_10fold(arg,dataset):
@@ -259,8 +259,8 @@ def train_on_dataset_10fold(arg,dataset):
     for dataset_num in dataset:
         train_time[str(dataset_num)]=[]
         if arg.data_dir=="./mit_bih":
-            for folds in range(10):
-                name="mitbih_"+str(dataset_num)+"_pair"
+            for folds in range(1):
+                name="mitbih_"+arg.sample_way+"_"+str(dataset_num)+"_pair"
                 start_time=time.time()
                 train_relation_10_fold(arg,name,folds)
                 end_time=time.time()
@@ -275,9 +275,9 @@ if __name__=="__main__":
     dataset=[1,5,10,30,50,90,150]
     print(arg.data_dir)
     print("Train on:",arg.model_name)
-    train_on_dataset(arg,dataset)
-    arg.phase="test"
-    train_on_dataset(arg,dataset)
+    # train_on_dataset(arg,dataset)
+    # arg.phase="test"
+    # train_on_dataset(arg,dataset)
     # arg.phase="train"
     # arg.test_set="spe"
     # train_on_dataset(arg,dataset)
@@ -296,7 +296,7 @@ if __name__=="__main__":
     # train_on_dataset_10fold(arg,dataset)
     # arg.phase="Train"
     # arg.test_set="spe"
-    # train_on_dataset_10fold(arg,dataset)
+    train_on_dataset_10fold(arg,dataset)
     arg.phase="test"
     train_on_dataset_10fold(arg,dataset)
     

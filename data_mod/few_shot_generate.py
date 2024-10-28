@@ -74,9 +74,9 @@ def path_ori(ori_path,train,data,folds):
 #ori_path=oripath+"_"+diff
 def path_save(basepath,train,data,query,shot,folds):
     if data=="data":
-        return os.path.join("./data", basepath,train,data,basepath+"_pair_"+query+"_"+str(shot)+"_shot"+"_fold"+str(folds)+".npy")
+        return os.path.join("./data", basepath,train,data,basepath+"_"+query+"_"+str(shot)+"_shot"+"_fold"+str(folds)+".npy")
     else:
-        return os.path.join("./data", basepath,train,data,basepath+"_pair_"+str(shot)+"_shot"+"_fold"+str(folds)+".npy")
+        return os.path.join("./data", basepath,train,data,basepath+"_"+str(shot)+"_shot"+"_fold"+str(folds)+".npy")
 
 
 
