@@ -41,7 +41,7 @@ def folder_generate(name):
         else:
             print("Dir exit.")
 
-def few_shot(dataloader,support_path,query_path,label_path,shot):
+def few_shot(dataloader,support_path,query_path,label_path,class_index,train_data,shot):
     query_set_list=[]
     query_set_label_list=[]
     support_set_list=[]
@@ -49,7 +49,7 @@ def few_shot(dataloader,support_path,query_path,label_path,shot):
         query_set_list.append(data)
         query_set_label_list.append(labels)
         batch=data.shape[0]
-        class_number=train_label.shape[-1]
+        class_number=labels.shape[-1]
         support_temp=[]
         for class_num in range(class_number):
             index_temp=[]
@@ -67,8 +67,63 @@ def few_shot(dataloader,support_path,query_path,label_path,shot):
     np.save(query_path,query_set_data)
     np.save(label_path,query_set_label)
 
+#ori_path=oripath+"_"+diff
+def path_ori(ori_path,train,data,folds):
+        return os.path.join("./data", ori_path,train,data,ori_path+"_fold"+str(folds)+".npy")
+
+#ori_path=oripath+"_"+diff
+def path_save(basepath,train,data,query,shot,folds):
+    if data=="data":
+        return os.path.join("./data", basepath,train,data,basepath+"_pair_"+query+"_"+str(shot)+"_shot"+"_fold"+str(folds)+".npy")
+    else:
+        return os.path.join("./data", basepath,train,data,basepath+"_pair_"+str(shot)+"_shot"+"_fold"+str(folds)+".npy")
 
 
+
+def few_shot_dagen(basepath,folds):
+    data_diff=["1","5","10","30","50","90","150"]     
+    for diff in data_diff:
+        ori_path=os.path.join(basepath+"_"+diff)
+        test_data_path=path_ori(ori_path,"test","data",folds)
+        test_label_path=path_ori(ori_path,"test","label",folds)
+        val_data_path=path_ori(ori_path,"val","data",folds)
+        val_label_path=path_ori(ori_path,"val","label",folds)
+        train_data_path=path_ori(ori_path,"train","data",folds)
+        train_label_path=path_ori(ori_path,"train","label",folds)
+        
+        base_path=os.path.join(basepath+"_"+diff+"_"+"pair")
+        
+        test_dataset=ECGDataset_all(test_data_path,test_label_path)
+        test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=1)
+        val_dataset=ECGDataset_all(val_data_path,val_label_path)
+        val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=1)
+
+        train_data=np.load(train_data_path)
+        train_label=np.load(train_label_path)
+        class_index={}
+        for class_num in range(train_label.shape[-1]):
+            class_index[class_num]=np.where(train_label[:,class_num]==1)[0].tolist()
+
+        shots=[1,5]
+
+        for shot in shots:
+            val_data_path_support=path_save(base_path,"val","data","support",shot,folds)
+            val_data_path_query=path_save(base_path,"val","data","query",shot,folds)
+            val_label_path_save=path_save(base_path,"val","label","query",shot,folds)
+            test_data_path_support=path_save(base_path,"test","data","support",shot,folds)
+            test_data_path_query=path_save(base_path,"test","data","query",shot,folds)
+            test_label_path_save=path_save(base_path,"test","label","query",shot,folds)
+
+            few_shot(val_loader,val_data_path_support,val_data_path_query,val_label_path_save,class_index,train_data,shot)
+            few_shot(test_loader,test_data_path_support,test_data_path_query,test_label_path_save,class_index,train_data,shot) 
+
+def few_shot_sample(arg,basepath):
+    if arg.sample_way=="random":
+        basepath=basepath+"_random"
+    elif arg.sample_way=="Corr":
+        basepath=basepath+"_Corr"
+    for i in range(10):
+        few_shot_dagen(basepath,i)
 
 
     
@@ -77,60 +132,8 @@ if __name__=="__main__":
     datadir=arg.data_dir
     basepath="mitbih"
     random.seed(arg.seed)
-    folder_generate(basepath)
-    # output_list=[]
-    # labels_list=[]
-    # for _, (data, labels) in enumerate(tqdm(train_loader)):
-    #     output_list.append(data)
-    #     labels_list.append(labels)
-    # y_data = np.vstack(output_list)
-    # y_label = np.vstack(labels_list)
-    # y_label=np.squeeze(y_label,axis=None)
-    # print(y_label.shape)
-    # print(y_data.shape)
-    data_diff=["1","5","10","30","50","90","150"]
-    for folds in range(10):
-        
-        for diff in data_diff:
-            base_path=Path("./data",basepath+"_"+diff)
-            test_data_path=Path(base_path,"test","data",basepath+"_"+diff+"_spe_fold"+str(folds)+".npy")
-            test_label_path=Path(base_path,"test","label",basepath+"_"+diff+"_spe_fold"+str(folds)+".npy")
-            val_data_path=Path(base_path,"val","data",basepath+"_"+diff+"_spe_fold"+str(folds)+".npy")
-            val_label_path=Path(base_path,"val","label",basepath+"_"+diff+"_spe_fold"+str(folds)+".npy")
-            train_data_path=Path(base_path,"train","data",basepath+"_"+diff+"_fold"+str(folds)+".npy")
-            train_label_path=Path(base_path,"train","label",basepath+"_"+diff+"_fold"+str(folds)+".npy")
-            base_path=Path("./data",basepath+"_"+diff+"_"+"pair")
-
-            test_dataset=ECGDataset_all(test_data_path,test_label_path)
-            test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=1)
-            val_dataset=ECGDataset_all(val_data_path,val_label_path)
-            val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=1)
-            train_dataset=ECGDataset_all(train_data_path,train_label_path)
-            train_loader = DataLoader(train_dataset, batch_size=64, shuffle=False, num_workers=8)
-        
-            output_list=[]
-            labels_list=[]#1 the same; 0 different
-            for _, (data, labels) in enumerate(tqdm(train_loader)):
-                output_list.append(data)
-                labels_list.append(labels)
-            train_data = np.vstack(output_list)
-            train_label = np.vstack(labels_list)
-            class_index={}
-            for class_num in range(train_label.shape[-1]):
-                class_index[class_num]=np.where(train_label[:,class_num]==1)[0].tolist()
-
-            shots=[1,5]
-
-            for shot in shots:
-                val_data_path_support=Path(base_path,"val","data",basepath+"_"+diff+"_pair_"+"support_"+str(shot)+"_"+"shot"+"_spe_fold"+str(folds)+".npy")
-                val_data_path_query=Path(base_path,"val","data",basepath+"_"+diff+"_pair_"+"query_"+str(shot)+"_"+"shot"+"_spe_fold"+str(folds)+".npy")
-                val_label_path_save=Path(base_path,"val","label",basepath+"_"+diff+"_pair_"+str(shot)+"_"+"shot"+"_spe_fold"+str(folds)+".npy")
-                test_data_path_support=Path(base_path,"test","data",basepath+"_"+diff+"_pair_"+"support_"+str(shot)+"_"+"shot"+"_spe_fold"+str(folds)+".npy")
-                test_data_path_query=Path(base_path,"test","data",basepath+"_"+diff+"_pair_"+"query_"+str(shot)+"_"+"shot"+"_spe_fold"+str(folds)+".npy")
-                test_label_path_save=Path(base_path,"test","label",basepath+"_"+diff+"_pair_"+str(shot)+"_"+"shot"+"_spe_fold"+str(folds)+".npy")
-
-                few_shot(val_loader,val_data_path_support,val_data_path_query,val_label_path_save,shot)
-                few_shot(test_loader,test_data_path_support,test_data_path_query,test_label_path_save,shot)
+    few_shot_sample(arg,basepath)
+   
 
 
             
